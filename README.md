@@ -52,7 +52,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/cyberscanner.git
+git clone https://github.com/abdelhaleemswelam/cyberscanner.git
 cd cyberscanner
 
 # Restore dependencies
