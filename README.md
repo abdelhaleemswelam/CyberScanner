@@ -62,6 +62,6 @@ dotnet restore
 dotnet build
 
 # Run on specific platform
-dotnet build -t:Run -f net8.0-android
-dotnet build -t:Run -f net8.0-maccatalyst
-dotnet build -t:Run -f net8.0-windows10.0.19041.0
+dotnet build -t:Run -f net10.0-android
+dotnet build -t:Run -f net10.0-maccatalyst
+dotnet build -t:Run -f net10.0-windows10.0.19041.0
