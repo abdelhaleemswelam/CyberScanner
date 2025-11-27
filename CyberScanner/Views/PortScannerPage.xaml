@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="CyberScanner.Views.PortScannerPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Port Scanner"
+             x:DataType="viewmodels:PortScannerViewModel"
+             xmlns:viewmodels="clr-namespace:CyberScanner.ViewModels"
+             xmlns:models="clr-namespace:CyberScanner.Models">
+
+    <ContentPage.BindingContext>
+        <viewmodels:PortScannerViewModel />
+    </ContentPage.BindingContext>
+
+    <ScrollView>
+        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" 
+              RowSpacing="20"
+              Padding="10">
+
+            <!-- Header -->
+            <Border Grid.Row="0" 
+                    Stroke="{StaticResource NeonCyan}"
+                    StrokeThickness="1"
+                    Background="{StaticResource DarkCard}"
+                    Padding="15"
+                    Margin="0,0,0,10">
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="PORT SCANNER" 
+                           Style="{StaticResource HeaderLabel}"
+                           TextColor="{StaticResource NeonCyan}"/>
+                    <Label Text="Discover open ports and services" 
+                           Style="{StaticResource SubHeaderLabel}"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Configuration Card -->
+            <Border Grid.Row="1"
+                    Stroke="{StaticResource NeonPurple}"
+                    StrokeThickness="1"
+                    Background="{StaticResource DarkCard}"
+                    Padding="15">
+                <Grid ColumnDefinitions="*,*,Auto,Auto" 
+                      ColumnSpacing="10"
+                      RowDefinitions="Auto,Auto,Auto,Auto"
+                      RowSpacing="10">
+
+                    <!-- Target IP -->
+                    <Label Grid.Row="0" Grid.Column="0" 
+                           Text="Target IP/Hostname" 
+                           TextColor="{StaticResource TextSecondary}"/>
+                    <Entry Grid.Row="1" Grid.Column="0" 
+                           Text="{Binding TargetIP}"
+                           Placeholder="127.0.0.1"/>
+
+                    <!-- Scan Profile -->
+                    <Label Grid.Row="0" Grid.Column="1" 
+                           Text="Scan Profile" 
+                           TextColor="{StaticResource TextSecondary}"/>
+                    <Picker Grid.Row="1" Grid.Column="1" 
+                            ItemsSource="{Binding PortProfiles}"
+                            SelectedItem="{Binding SelectedProfile}"/>
+
+                    <!-- Timeout -->
+                    <Label Grid.Row="0" Grid.Column="2" 
+                           Text="Timeout (ms)" 
+                           TextColor="{StaticResource TextSecondary}"/>
+                    <Entry Grid.Row="1" Grid.Column="2" 
+                           Text="{Binding TimeoutMs}"
+                           Keyboard="Numeric"/>
+
+                    <!-- Threads -->
+                    <Label Grid.Row="0" Grid.Column="3" 
+                           Text="Max Threads" 
+                           TextColor="{StaticResource TextSecondary}"/>
+                    <Entry Grid.Row="1" Grid.Column="3" 
+                           Text="{Binding MaxThreads}"
+                           Keyboard="Numeric"/>
+
+                    <!-- Port Range -->
+                    <Label Grid.Row="2" Grid.Column="0" 
+                           Text="Port Range/List" 
+                           TextColor="{StaticResource TextSecondary}"/>
+                    <Entry Grid.Row="3" Grid.Column="0" 
+                           Text="{Binding PortRange}"
+                           Placeholder="1-1000 or 80,443,22"/>
+
+                    <!-- Custom Ports (visible when Custom Ports profile selected) -->
+                    <Label Grid.Row="2" Grid.Column="1" 
+                           Text="Custom Ports" 
+                           TextColor="{StaticResource TextSecondary}"
+                           IsVisible="{Binding SelectedProfile, Converter={x:StaticResource CustomPortsVisibleConverter}}"/>
+                    <Entry Grid.Row="3" Grid.Column="1" 
+                           Text="{Binding CustomPorts}"
+                           Placeholder="80,443,8080"
+                           IsVisible="{Binding SelectedProfile, Converter={x:StaticResource CustomPortsVisibleConverter}}"/>
+
+                    <!-- Action Buttons -->
+                    <StackLayout Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2"
+                                 Orientation="Horizontal"
+                                 Spacing="10"
+                                 HorizontalOptions="End">
+
+                        <Button Text="Start Scan" 
+                                Command="{Binding ScanCommand}"
+                                Style="{StaticResource NeonCyanButton}"
+                                IsEnabled="{Binding IsScanning, Converter={x:StaticResource InverseBoolConverter}}"/>
+
+                        <Button Text="Stop Scan" 
+                                Command="{Binding StopCommand}"
+                                Style="{StaticResource NeonPurpleButton}"
+                                IsEnabled="{Binding IsScanning}"/>
+
+                    </StackLayout>
+
+                </Grid>
+            </Border>
+
+            <!-- Progress and Status -->
+            <Border Grid.Row="2"
+                    Stroke="{StaticResource DarkCard}"
+                    StrokeThickness="1"
+                    Background="{StaticResource DarkCard}"
+                    Padding="15"
+                    IsVisible="{Binding IsScanning}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{Binding StatusMessage}" 
+                           TextColor="{StaticResource TextPrimary}"/>
+                    <ProgressBar Progress="{Binding Progress, Converter={x:StaticResource PercentConverter}}"
+                                 ProgressColor="{StaticResource NeonCyan}"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Results -->
+            <Border Grid.Row="3"
+                    Stroke="{StaticResource DarkCard}"
+                    StrokeThickness="1"
+                    Background="{StaticResource DarkCard}"
+                    Padding="0">
+                <Grid RowDefinitions="Auto,*">
+
+                    <!-- Results Header -->
+                    <Border Grid.Row="0" 
+                            Background="{StaticResource DarkBackground}"
+                            Padding="15">
+                        <Grid ColumnDefinitions="*,*,*,*,*">
+                            <Label Grid.Column="0" Text="IP Address" TextColor="{StaticResource NeonCyan}" FontAttributes="Bold"/>
+                            <Label Grid.Column="1" Text="Port" TextColor="{StaticResource NeonCyan}" FontAttributes="Bold"/>
+                            <Label Grid.Column="2" Text="Service" TextColor="{StaticResource NeonCyan}" FontAttributes="Bold"/>
+                            <Label Grid.Column="3" Text="Status" TextColor="{StaticResource NeonCyan}" FontAttributes="Bold"/>
+                            <Label Grid.Column="4" Text="Protocol" TextColor="{StaticResource NeonCyan}" FontAttributes="Bold"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Results List -->
+                    <CollectionView Grid.Row="1" 
+                                    ItemsSource="{Binding PortResults}"
+                                    Style="{StaticResource CyberpunkCollectionView}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:PortResult">
+                                <Grid Padding="15" 
+                                      HeightRequest="45"
+                                      BackgroundColor="{Binding Status, Converter={x:StaticResource PortStatusToColorConverter}}">
+
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Label Grid.Column="0" 
+                                           Text="{Binding IPAddress}" 
+                                           TextColor="{StaticResource TextPrimary}"
+                                           VerticalOptions="Center"/>
+
+                                    <Label Grid.Column="1" 
+                                           Text="{Binding Port}" 
+                                           TextColor="{StaticResource TextSecondary}"
+                                           VerticalOptions="Center"/>
+
+                                    <Label Grid.Column="2" 
+                                           Text="{Binding Service}" 
+                                           TextColor="{StaticResource TextSecondary}"
+                                           VerticalOptions="Center"/>
+
+                                    <Label Grid.Column="3" 
+                                           Text="{Binding Status}"
+                                           TextColor="{Binding Status, Converter={x:StaticResource PortStatusColorConverter}}"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center"/>
+
+                                    <Label Grid.Column="4" 
+                                           Text="{Binding Protocol}" 
+                                           TextColor="{StaticResource TextSecondary}"
+                                           VerticalOptions="Center"/>
+
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </Grid>
+            </Border>
+
+            <!-- Export Buttons -->
+            <StackLayout Grid.Row="4"
+                         Orientation="Horizontal"
+                         Spacing="10"
+                         HorizontalOptions="End"
+                         Margin="0,10,0,0">
+
+                <Button Text="Export CSV" 
+                        Command="{Binding ExportCsvCommand}"
+                        Style="{StaticResource NeonPurpleButton}"/>
+
+                <Button Text="Copy to Clipboard" 
+                        Command="{Binding CopyToClipboardCommand}"
+                        Style="{StaticResource NeonCyanButton}"/>
+
+            </StackLayout>
+
+        </Grid>
+    </ScrollView>
+
+</ContentPage>

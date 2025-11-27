@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:converters="clr-namespace:CyberScanner.Converters">
+
+    <!-- Converters -->
+    <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+    <converters:PercentConverter x:Key="PercentConverter" />
+    <converters:AliveStatusConverter x:Key="AliveStatusConverter" />
+    <converters:AliveColorConverter x:Key="AliveColorConverter" />
+    <converters:AliveToColorConverter x:Key="AliveToColorConverter" />
+    <converters:CustomPortsVisibleConverter x:Key="CustomPortsVisibleConverter" />
+    <converters:PortStatusColorConverter x:Key="PortStatusColorConverter" />
+    <converters:PortStatusToColorConverter x:Key="PortStatusToColorConverter" />
+    <!-- Global Styles -->
+    <Style TargetType="ContentPage">
+        <Setter Property="BackgroundColor" Value="{StaticResource DarkBackground}"/>
+        <Setter Property="Padding" Value="20"/>
+    </Style>
+
+    <!-- Button Styles -->
+    <Style x:Key="NeonPurpleButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="TextColor" Value="{StaticResource NeonPurple}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontAttributes" Value="Bold"/>
+        <Setter Property="BorderColor" Value="{StaticResource NeonPurple}"/>
+        <Setter Property="BorderWidth" Value="2"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="20,12"/>
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.8"/>
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="1"/>
+                            <Setter Property="Scale" Value="0.95"/>
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
+    <Style x:Key="NeonCyanButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="TextColor" Value="{StaticResource NeonCyan}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontAttributes" Value="Bold"/>
+        <Setter Property="BorderColor" Value="{StaticResource NeonCyan}"/>
+        <Setter Property="BorderWidth" Value="2"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="20,12"/>
+    </Style>
+
+    <!-- Label Styles -->
+    <Style x:Key="HeaderLabel" TargetType="Label">
+        <Setter Property="TextColor" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontAttributes" Value="Bold"/>
+        <Setter Property="HorizontalOptions" Value="Start"/>
+    </Style>
+
+    <Style x:Key="SubHeaderLabel" TargetType="Label">
+        <Setter Property="TextColor" Value="{StaticResource TextSecondary}"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="HorizontalOptions" Value="Start"/>
+    </Style>
+
+    <!-- Entry Styles -->
+    <Style TargetType="Entry">
+        <Setter Property="TextColor" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="BackgroundColor" Value="{StaticResource DarkCard}"/>
+        <Setter Property="PlaceholderColor" Value="{StaticResource TextSecondary}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="HeightRequest" Value="45"/>
+        <Setter Property="Margin" Value="0,0,0,10"/>
+    </Style>
+
+    <!-- Picker Styles -->
+    <Style TargetType="Picker">
+        <Setter Property="TextColor" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="BackgroundColor" Value="{StaticResource DarkCard}"/>
+        <Setter Property="TitleColor" Value="{StaticResource TextSecondary}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="HeightRequest" Value="45"/>
+    </Style>
+
+    <!-- CollectionView Styles -->
+    <Style x:Key="CyberpunkCollectionView" TargetType="CollectionView">
+        <Setter Property="BackgroundColor" Value="Transparent"/>
+        <Setter Property="Margin" Value="0,10,0,0"/>
+    </Style>
+
+</ResourceDictionary>

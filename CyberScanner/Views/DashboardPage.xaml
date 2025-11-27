@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="CyberScanner.Views.DashboardPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Dashboard"
+             x:DataType="viewmodels:DashboardViewModel"
+             xmlns:viewmodels="clr-namespace:CyberScanner.ViewModels">
+
+    <ContentPage.BindingContext>
+        <viewmodels:DashboardViewModel />
+    </ContentPage.BindingContext>
+
+    <ScrollView>
+        <Grid RowDefinitions="Auto,Auto,Auto" 
+              RowSpacing="20"
+              Padding="10">
+
+            <!-- Header -->
+            <Border Grid.Row="0" 
+                    Stroke="{StaticResource NeonCyan}"
+                    StrokeThickness="1"
+                    Background="{StaticResource DarkCard}"
+                    Padding="15">
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="CYBERSCANNER DASHBOARD" 
+                           Style="{StaticResource HeaderLabel}"
+                           TextColor="{StaticResource NeonCyan}"/>
+                    <Label Text="Network security analysis platform" 
+                           Style="{StaticResource SubHeaderLabel}"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Quick Actions -->
+            <Border Grid.Row="1"
+                    Stroke="{StaticResource NeonPurple}"
+                    StrokeThickness="1"
+                    Background="{StaticResource DarkCard}"
+                    Padding="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="QUICK ACTIONS" 
+                           TextColor="{StaticResource NeonPurple}"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="15">
+                        <Button Grid.Column="0" 
+                                Text="IP Scanner"
+                                Command="{Binding NavigateToIpScannerCommand}"
+                                Style="{StaticResource NeonCyanButton}"/>
+
+                        <Button Grid.Column="1" 
+                                Text="Port Scanner"
+                                Command="{Binding NavigateToPortScannerCommand}"
+                                Style="{StaticResource NeonPurpleButton}"/>
+
+                        <Button Grid.Column="2" 
+                                Text="Settings"
+                                Command="{Binding NavigateToSettingsCommand}"
+                                Style="{StaticResource NeonCyanButton}"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Statistics -->
+            <Border Grid.Row="2"
+                    Stroke="{StaticResource DarkCard}"
+                    StrokeThickness="1"
+                    Background="{StaticResource DarkCard}"
+                    Padding="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="SYSTEM STATUS" 
+                           TextColor="{StaticResource NeonCyan}"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="15">
+                        <!-- Network Status -->
+                        <Border Grid.Column="0"
+                                Stroke="{StaticResource NeonCyan}"
+                                StrokeThickness="1"
+                                Background="{StaticResource DarkBackground}"
+                                Padding="15">
+                            <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                                <Label Text="NETWORK" 
+                                       TextColor="{StaticResource TextSecondary}"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="ONLINE" 
+                                       TextColor="{StaticResource Success}"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Scanner Status -->
+                        <Border Grid.Column="1"
+                                Stroke="{StaticResource NeonPurple}"
+                                StrokeThickness="1"
+                                Background="{StaticResource DarkBackground}"
+                                Padding="15">
+                            <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                                <Label Text="SCANNER" 
+                                       TextColor="{StaticResource TextSecondary}"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="READY" 
+                                       TextColor="{StaticResource Success}"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Platform -->
+                        <Border Grid.Column="2"
+                                Stroke="{StaticResource NeonCyan}"
+                                StrokeThickness="1"
+                                Background="{StaticResource DarkBackground}"
+                                Padding="15">
+                            <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                                <Label Text="PLATFORM" 
+                                       TextColor="{StaticResource TextSecondary}"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="{Binding Platform}" 
+                                       TextColor="{StaticResource TextPrimary}"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+        </Grid>
+    </ScrollView>
+
+</ContentPage>

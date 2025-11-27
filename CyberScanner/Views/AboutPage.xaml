@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="CyberScanner.Views.AboutPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="About">
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+
+            <Label Text="About CyberScanner" 
+                   FontSize="24"
+                   TextColor="{StaticResource NeonCyan}"
+                   FontAttributes="Bold"/>
+
+            <Label Text="Professional network scanning tool with cyberpunk UI" 
+                   TextColor="{StaticResource TextSecondary}"/>
+
+            <Label Text="Developed by:" 
+                   FontSize="18"
+                   TextColor="{StaticResource NeonCyan}"
+                   FontAttributes="Bold"/>
+
+            <Label Text="Abdelhaleem Swelam"
+                   FontSize="16"
+                   TextColor="{StaticResource TextSecondary}"/>
+
+            <!-- LinkedIn -->
+            <Label Text="LinkedIn Profile"
+                   TextColor="{StaticResource NeonCyan}"
+                   FontAttributes="Bold">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="LinkedIn_Tapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <!-- Facebook -->
+            <Label Text="Facebook Profile"
+                   TextColor="{StaticResource NeonCyan}"
+                   FontAttributes="Bold">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="Facebook_Tapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

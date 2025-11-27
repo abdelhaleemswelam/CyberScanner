@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="CyberScanner.Views.IpScannerPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="IP Scanner"
+             x:DataType="viewmodels:IpScannerViewModel"
+             xmlns:viewmodels="clr-namespace:CyberScanner.ViewModels"
+             xmlns:models="clr-namespace:CyberScanner.Models">
+
+    <ContentPage.BindingContext>
+        <viewmodels:IpScannerViewModel />
+    </ContentPage.BindingContext>
+
+    <ScrollView>
+        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" 
+              RowSpacing="20"
+              Padding="10">
+
+            <!-- Header -->
+            <Border Grid.Row="0" 
+                    Stroke="{StaticResource NeonCyan}"
+                    StrokeThickness="1"
+                    Background="{StaticResource DarkCard}"
+                    Padding="15"
+                    Margin="0,0,0,10">
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="IP RANGE SCANNER" 
+                           Style="{StaticResource HeaderLabel}"
+                           TextColor="{StaticResource NeonCyan}"/>
+                    <Label Text="Discover devices on your network" 
+                           Style="{StaticResource SubHeaderLabel}"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Configuration Card -->
+            <Border Grid.Row="1"
+                    Stroke="{StaticResource NeonPurple}"
+                    StrokeThickness="1"
+                    Background="{StaticResource DarkCard}"
+                    Padding="15">
+                <Grid ColumnDefinitions="*,*,Auto,Auto" 
+                      ColumnSpacing="10"
+                      RowDefinitions="Auto,Auto,Auto"
+                      RowSpacing="10">
+
+                    <!-- IP Range -->
+                    <Label Grid.Row="0" Grid.Column="0" 
+                           Text="Start IP" 
+                           TextColor="{StaticResource TextSecondary}"/>
+                    <Entry Grid.Row="1" Grid.Column="0" 
+                           Text="{Binding StartIP}"
+                           Placeholder="192.168.1.1"/>
+
+                    <Label Grid.Row="0" Grid.Column="1" 
+                           Text="End IP" 
+                           TextColor="{StaticResource TextSecondary}"/>
+                    <Entry Grid.Row="1" Grid.Column="1" 
+                           Text="{Binding EndIP}"
+                           Placeholder="192.168.1.254"/>
+
+                    <!-- Timeout -->
+                    <Label Grid.Row="0" Grid.Column="2" 
+                           Text="Timeout (ms)" 
+                           TextColor="{StaticResource TextSecondary}"/>
+                    <Entry Grid.Row="1" Grid.Column="2" 
+                           Text="{Binding TimeoutMs}"
+                           Keyboard="Numeric"/>
+
+                    <!-- Threads -->
+                    <Label Grid.Row="0" Grid.Column="3" 
+                           Text="Max Threads" 
+                           TextColor="{StaticResource TextSecondary}"/>
+                    <Entry Grid.Row="1" Grid.Column="3" 
+                           Text="{Binding MaxThreads}"
+                           Keyboard="Numeric"/>
+
+                    <!-- Action Buttons -->
+                    <StackLayout Grid.Row="2" Grid.ColumnSpan="4"
+                                 Orientation="Horizontal"
+                                 Spacing="10"
+                                 HorizontalOptions="Start">
+
+                        <Button Text="Start Scan" 
+                                Command="{Binding ScanCommand}"
+                                Style="{StaticResource NeonCyanButton}"
+                                IsEnabled="{Binding IsScanning, Converter={x:StaticResource InverseBoolConverter}}"/>
+
+                        <Button Text="Stop Scan" 
+                                Command="{Binding StopCommand}"
+                                Style="{StaticResource NeonPurpleButton}"
+                                IsEnabled="{Binding IsScanning}"/>
+
+                    </StackLayout>
+
+                </Grid>
+            </Border>
+
+            <!-- Progress and Status -->
+            <Border Grid.Row="2"
+                    Stroke="{StaticResource DarkCard}"
+                    StrokeThickness="1"
+                    Background="{StaticResource DarkCard}"
+                    Padding="15"
+                    IsVisible="{Binding IsScanning}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{Binding StatusMessage}" 
+                           TextColor="{StaticResource TextPrimary}"/>
+                    <ProgressBar Progress="{Binding Progress, Converter={x:StaticResource PercentConverter}}"
+                                 ProgressColor="{StaticResource NeonCyan}"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Results -->
+            <Border Grid.Row="3"
+                    Stroke="{StaticResource DarkCard}"
+                    StrokeThickness="1"
+                    Background="{StaticResource DarkCard}"
+                    Padding="0">
+                <Grid RowDefinitions="Auto,*">
+
+                    <!-- Results Header -->
+                    <Border Grid.Row="0" 
+                            Background="{StaticResource DarkBackground}"
+                            Padding="15">
+                        <Grid ColumnDefinitions="*,*,*,*,*,*">
+                            <Label Grid.Column="0" Text="IP Address" TextColor="{StaticResource NeonCyan}" FontAttributes="Bold"/>
+                            <Label Grid.Column="1" Text="Hostname" TextColor="{StaticResource NeonCyan}" FontAttributes="Bold"/>
+                            <Label Grid.Column="2" Text="MAC Address" TextColor="{StaticResource NeonCyan}" FontAttributes="Bold"/>
+                            <Label Grid.Column="3" Text="Ping Time" TextColor="{StaticResource NeonCyan}" FontAttributes="Bold"/>
+                            <Label Grid.Column="4" Text="Status" TextColor="{StaticResource NeonCyan}" FontAttributes="Bold"/>
+                            <Label Grid.Column="5" Text="Last Seen" TextColor="{StaticResource NeonCyan}" FontAttributes="Bold"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Results List -->
+                    <CollectionView Grid.Row="1" 
+                                    ItemsSource="{Binding ScanResults}"
+                                    Style="{StaticResource CyberpunkCollectionView}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:ScanResult">
+                                <Grid Padding="15" 
+                                      HeightRequest="50"
+                                      BackgroundColor="{Binding IsAlive, Converter={x:StaticResource AliveToColorConverter}}">
+
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Label Grid.Column="0" 
+                                           Text="{Binding IPAddress}" 
+                                           TextColor="{StaticResource TextPrimary}"
+                                           VerticalOptions="Center"/>
+
+                                    <Label Grid.Column="1" 
+                                           Text="{Binding Hostname}" 
+                                           TextColor="{StaticResource TextSecondary}"
+                                           VerticalOptions="Center"/>
+
+                                    <Label Grid.Column="2" 
+                                           Text="{Binding MACAddress}" 
+                                           TextColor="{StaticResource TextSecondary}"
+                                           VerticalOptions="Center"/>
+
+                                    <Label Grid.Column="3" 
+                                           Text="{Binding PingTime, StringFormat='{0} ms'}" 
+                                           TextColor="{StaticResource TextSecondary}"
+                                           VerticalOptions="Center"/>
+
+                                    <Label Grid.Column="4" 
+                                           Text="{Binding IsAlive, Converter={x:StaticResource AliveStatusConverter}}"
+                                           TextColor="{Binding IsAlive, Converter={x:StaticResource AliveColorConverter}}"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center"/>
+
+                                    <Label Grid.Column="5" 
+                                           Text="{Binding ScanTime, StringFormat='{0:HH:mm:ss}'}" 
+                                           TextColor="{StaticResource TextSecondary}"
+                                           VerticalOptions="Center"/>
+
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </Grid>
+            </Border>
+
+            <!-- Export Buttons -->
+            <StackLayout Grid.Row="4"
+                         Orientation="Horizontal"
+                         Spacing="10"
+                         HorizontalOptions="End"
+                         Margin="0,10,0,0">
+
+                <Button Text="Export CSV" 
+                        Command="{Binding ExportCsvCommand}"
+                        Style="{StaticResource NeonPurpleButton}"/>
+
+                <Button Text="Copy to Clipboard" 
+                        Command="{Binding CopyToClipboardCommand}"
+                        Style="{StaticResource NeonCyanButton}"/>
+
+            </StackLayout>
+
+        </Grid>
+    </ScrollView>
+
+</ContentPage>
