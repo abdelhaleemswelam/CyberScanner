@@ -6,7 +6,7 @@
 
 *A futuristic network scanning tool with cyberpunk aesthetics*
 
-[![.NET MAUI](https://img.shields.io/badge/.NET%20MAUI-8.0-512BD4?style=for-the-badge&logo=.net)](https://dotnet.microsoft.com/en-us/apps/maui)
+[![.NET MAUI](https://img.shields.io/badge/.NET%20MAUI-10.0-512BD4?style=for-the-badge&logo=.net)](https://dotnet.microsoft.com/en-us/apps/maui)
 [![Platforms](https://img.shields.io/badge/Platforms-Windows%20%7C%20macOS%20%7C%20Android-00E5FF?style=for-the-badge)](https://dotnet.microsoft.com/en-us/platform)
 [![License](https://img.shields.io/badge/License-MIT-00FF88?style=for-the-badge)](LICENSE)
 
