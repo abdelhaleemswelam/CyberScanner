@@ -1,14 +1,56 @@
-name: .NET CI
+name: MAUI Multi-Platform Build
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
-  build:
+
+  # =========================
+  #  WINDOWS (Windows + Android)
+  # =========================
+  build-windows-android:
     runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET 10
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Install MAUI workloads
+      run: |
+        dotnet workload install maui
+        dotnet workload install maui-android
+
+    - name: Restore dependencies
+      run: dotnet restore --runtime win-x64
+
+    - name: Build Windows + Android
+      run: dotnet build CyberScanner/CyberScanner.csproj `
+             -p:TargetFrameworks="net10.0-windows10.0.19041.0;net10.0-android" `
+             --configuration Release --no-restore
+
+    - name: Upload Windows/Android outputs
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-android-build
+        path: |
+          **/bin/Release/**/*.msix
+          **/bin/Release/**/*.apk
+          **/bin/Release/**/*.aab
+
+
+  # =========================
+  #  MACOS (MacCatalyst only)
+  # =========================
+  build-mac:
+    runs-on: macos-latest
+    needs: build-windows-android
 
     steps:
     - uses: actions/checkout@v4
@@ -18,15 +60,23 @@ jobs:
       with:
         dotnet-version: 10.0.x
 
-    - name: Install MAUI workloads
+    - name: Install MAUI Mac workloads
       run: |
         dotnet workload install maui
-        dotnet workload install maui-android
+        dotnet workload install maui-maccatalyst
 
-    - name: Restore
-      run: dotnet restore --runtime win-x64
+    - name: Restore dependencies
+      run: dotnet restore
 
-    - name: Build (Windows + Android only)
-      run: dotnet build CyberScanner/CyberScanner.csproj `
-             -p:TargetFrameworks="net10.0-windows10.0.19041.0;net10.0-android" `
+    - name: Build MacCatalyst
+      run: dotnet build CyberScanner/CyberScanner.csproj \
+             -p:TargetFramework=net10.0-maccatalyst \
              --configuration Release --no-restore
+
+    - name: Upload Mac build
+      uses: actions/upload-artifact@v4
+      with:
+        name: mac-build
+        path: |
+          **/bin/Release/**/*.app
+          **/bin/Release/**/*.pkg
