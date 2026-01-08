@@ -36,7 +36,7 @@ public static class MacAddressResolver
     {
         try
         {
-            var process = new Process
+            using var process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
@@ -50,7 +50,14 @@ public static class MacAddressResolver
 
             process.Start();
             var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
+            if (!process.WaitForExit(2000))
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill();
+                }
+                return "Unknown";
+            }
 
             return ParseArpOutput(output, ipAddress);
         }
@@ -64,7 +71,7 @@ public static class MacAddressResolver
     {
         try
         {
-            var process = new Process
+            using var process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
@@ -78,7 +85,14 @@ public static class MacAddressResolver
 
             process.Start();
             var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
+            if (!process.WaitForExit(2000))
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill();
+                }
+                return "Unknown";
+            }
 
             return ParseArpOutput(output, ipAddress);
         }

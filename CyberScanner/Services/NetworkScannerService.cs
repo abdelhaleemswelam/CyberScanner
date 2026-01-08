@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -11,8 +12,30 @@ public class NetworkScannerService
     public async Task<List<ScanResult>> ScanIPRangeAsync(string startIP, string endIP, int timeoutMs, int maxThreads,
         CancellationToken cancellationToken, IProgress<int> progress = null)
     {
-        var start = IPAddress.Parse(startIP).GetAddressBytes();
-        var end = IPAddress.Parse(endIP).GetAddressBytes();
+        if (timeoutMs <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeoutMs), "Timeout must be greater than zero.");
+        }
+
+        if (maxThreads <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxThreads), "Max threads must be greater than zero.");
+        }
+
+        if (!IPAddress.TryParse(startIP, out var startAddress) || startAddress.AddressFamily != AddressFamily.InterNetwork ||
+            !IPAddress.TryParse(endIP, out var endAddress) || endAddress.AddressFamily != AddressFamily.InterNetwork)
+        {
+            throw new ArgumentException("Start and end IP must be valid IPv4 addresses.");
+        }
+
+        var start = startAddress.GetAddressBytes();
+        var end = endAddress.GetAddressBytes();
+
+        if (IPAddress.NetworkToHostOrder(BitConverter.ToInt32(start, 0)) >
+            IPAddress.NetworkToHostOrder(BitConverter.ToInt32(end, 0)))
+        {
+            (start, end) = (end, start);
+        }
 
         var ipAddresses = GenerateIPRange(start, end).ToList();
         var results = new ConcurrentBag<ScanResult>();
@@ -25,22 +48,25 @@ public class NetworkScannerService
             CancellationToken = cancellationToken
         };
 
+        if (total == 0)
+        {
+            progress?.Report(100);
+            return results.ToList();
+        }
+
         try
         {
-            await Task.Run(() =>
+            await Parallel.ForEachAsync(ipAddresses, options, async (ip, token) =>
             {
-                Parallel.ForEach(ipAddresses, options, ip =>
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                        return;
+                if (token.IsCancellationRequested)
+                    return;
 
-                    var result = ScanIPAddress(ip, timeoutMs).Result;
-                    results.Add(result);
+                var result = await ScanIPAddress(ip, timeoutMs, token);
+                results.Add(result);
 
-                    Interlocked.Increment(ref completed);
-                    progress?.Report((completed * 100) / total);
-                });
-            }, cancellationToken);
+                var current = Interlocked.Increment(ref completed);
+                progress?.Report((current * 100) / total);
+            });
         }
         catch (OperationCanceledException)
         {
@@ -62,18 +88,29 @@ public class NetworkScannerService
         }
     }
 
-    private async Task<ScanResult> ScanIPAddress(string ipAddress, int timeoutMs)
+    private async Task<ScanResult> ScanIPAddress(string ipAddress, int timeoutMs, CancellationToken cancellationToken)
     {
         var result = new ScanResult
         {
             IPAddress = ipAddress,
-            ScanTime = DateTime.Now
+            ScanTime = DateTime.Now,
+            IsAlive = false,
+            Hostname = "Unknown",
+            MACAddress = "Unknown"
         };
 
         try
         {
             using var ping = new Ping();
-            var reply = await ping.SendPingAsync(ipAddress, timeoutMs);
+            var pingTask = ping.SendPingAsync(ipAddress, timeoutMs);
+            var completedTask = await Task.WhenAny(pingTask, Task.Delay(timeoutMs, cancellationToken));
+
+            if (completedTask != pingTask)
+            {
+                return result;
+            }
+
+            var reply = await pingTask;
 
             if (reply.Status == IPStatus.Success)
             {
@@ -87,8 +124,13 @@ public class NetworkScannerService
                 result.MACAddress = await MacAddressResolver.GetMacAddressAsync(ipAddress);
             }
         }
+        catch (OperationCanceledException)
+        {
+            // Cancellation requested, return partial result
+        }
         catch
         {
+            Debug.WriteLine($"Failed to scan {ipAddress}.");
             result.IsAlive = false;
         }
 

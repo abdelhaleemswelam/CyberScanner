@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net.Sockets;
 using CyberScanner.Models;
 
@@ -17,6 +18,16 @@ public class PortScannerService
     public async Task<List<PortResult>> ScanPortsAsync(string ipAddress, List<int> ports, int timeoutMs, int maxThreads,
         CancellationToken cancellationToken, IProgress<int> progress = null)
     {
+        if (timeoutMs <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeoutMs), "Timeout must be greater than zero.");
+        }
+
+        if (maxThreads <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxThreads), "Max threads must be greater than zero.");
+        }
+
         var results = new ConcurrentBag<PortResult>();
         var total = ports.Count;
         var completed = 0;
@@ -27,22 +38,25 @@ public class PortScannerService
             CancellationToken = cancellationToken
         };
 
+        if (total == 0)
+        {
+            progress?.Report(100);
+            return results.ToList();
+        }
+
         try
         {
-            await Task.Run(() =>
+            await Parallel.ForEachAsync(ports, options, async (port, token) =>
             {
-                Parallel.ForEach(ports, options, port =>
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                        return;
+                if (token.IsCancellationRequested)
+                    return;
 
-                    var result = ScanPort(ipAddress, port, timeoutMs).Result;
-                    results.Add(result);
+                var result = await ScanPort(ipAddress, port, timeoutMs, token);
+                results.Add(result);
 
-                    Interlocked.Increment(ref completed);
-                    progress?.Report((completed * 100) / total);
-                });
-            }, cancellationToken);
+                var current = Interlocked.Increment(ref completed);
+                progress?.Report((current * 100) / total);
+            });
         }
         catch (OperationCanceledException)
         {
@@ -52,14 +66,15 @@ public class PortScannerService
         return results.ToList();
     }
 
-    private async Task<PortResult> ScanPort(string ipAddress, int port, int timeoutMs)
+    private async Task<PortResult> ScanPort(string ipAddress, int port, int timeoutMs, CancellationToken cancellationToken)
     {
         var result = new PortResult
         {
             IPAddress = ipAddress,
             Port = port,
             Service = GetServiceName(port),
-            Protocol = "TCP"
+            Protocol = "TCP",
+            Status = "Closed"
         };
 
         try
@@ -67,18 +82,20 @@ public class PortScannerService
             using var client = new TcpClient();
             var task = client.ConnectAsync(ipAddress, port);
 
-            if (await Task.WhenAny(task, Task.Delay(timeoutMs)) == task && client.Connected)
+            if (await Task.WhenAny(task, Task.Delay(timeoutMs, cancellationToken)) == task && client.Connected)
             {
                 result.Status = "Open";
                 client.Close();
             }
-            else
-            {
-                result.Status = "Closed";
-            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancellation requested, return partial result
+            result.Status = "Canceled";
         }
         catch
         {
+            Debug.WriteLine($"Failed to scan {ipAddress}:{port}.");
             result.Status = "Closed";
         }
 

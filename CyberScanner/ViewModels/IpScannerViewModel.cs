@@ -23,8 +23,8 @@ public class IpScannerViewModel : BaseViewModel
 
         ScanCommand = new Command(async () => await ExecuteScanAsync(), () => !IsScanning);
         StopCommand = new Command(ExecuteStopScan, () => IsScanning);
-        ExportCsvCommand = new Command(ExecuteExportCsv, () => ScanResults.Any());
-        CopyToClipboardCommand = new Command(ExecuteCopyToClipboard, () => ScanResults.Any());
+        ExportCsvCommand = new Command(async () => await ExecuteExportCsvAsync(), () => ScanResults.Any());
+        CopyToClipboardCommand = new Command(async () => await ExecuteCopyToClipboardAsync(), () => ScanResults.Any());
 
         // Sample data for preview
         LoadSampleData();
@@ -131,7 +131,7 @@ public class IpScannerViewModel : BaseViewModel
         StatusMessage = "Stopping scan...";
     }
 
-    private async void ExecuteExportCsv()
+    private async Task ExecuteExportCsvAsync()
     {
         try
         {
@@ -155,7 +155,7 @@ public class IpScannerViewModel : BaseViewModel
         }
     }
 
-    private async void ExecuteCopyToClipboard()
+    private async Task ExecuteCopyToClipboardAsync()
     {
         var text = string.Join(Environment.NewLine, ScanResults.Select(r =>
             $"{r.IPAddress}\t{r.Hostname}\t{r.MACAddress}\t{r.PingTime}ms\t{(r.IsAlive ? "Alive" : "Dead")}"));
