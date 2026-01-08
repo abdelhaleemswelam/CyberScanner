@@ -16,7 +16,7 @@ public class SettingsViewModel : BaseViewModel
         Title = "Settings";
 
         SaveCommand = new Command(ExecuteSave);
-        ResetCommand = new Command(ExecuteReset);
+        ResetCommand = new Command(async () => await ExecuteResetAsync());
         BrowseFolderCommand = new Command(async () => await ExecuteBrowseFolder());
 
         LoadSettings();
@@ -94,18 +94,18 @@ public class SettingsViewModel : BaseViewModel
         Application.Current.MainPage.DisplayAlert("Success", "Settings saved successfully!", "OK");
     }
 
-    private void ExecuteReset()
+    private async Task ExecuteResetAsync()
     {
-        var result = Application.Current.MainPage.DisplayAlert(
+        var result = await Application.Current.MainPage.DisplayAlert(
             "Reset Settings",
             "Are you sure you want to reset all settings to defaults?",
-            "Yes", "No").Result;
+            "Yes", "No");
 
         if (result)
         {
             Preferences.Clear();
             LoadSettings();
-            Application.Current.MainPage.DisplayAlert("Success", "Settings reset to defaults!", "OK");
+            await Application.Current.MainPage.DisplayAlert("Success", "Settings reset to defaults!", "OK");
         }
     }
 

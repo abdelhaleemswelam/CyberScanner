@@ -25,8 +25,8 @@ public class PortScannerViewModel : BaseViewModel
 
         ScanCommand = new Command(async () => await ExecuteScanAsync(), () => !IsScanning);
         StopCommand = new Command(ExecuteStopScan, () => IsScanning);
-        ExportCsvCommand = new Command(ExecuteExportCsv, () => PortResults.Any());
-        CopyToClipboardCommand = new Command(ExecuteCopyToClipboard, () => PortResults.Any());
+        ExportCsvCommand = new Command(async () => await ExecuteExportCsvAsync(), () => PortResults.Any());
+        CopyToClipboardCommand = new Command(async () => await ExecuteCopyToClipboardAsync(), () => PortResults.Any());
 
         // Initialize port profiles
         PortProfiles = new List<string>
@@ -150,6 +150,11 @@ public class PortScannerViewModel : BaseViewModel
             PortResults.Clear();
 
             var ports = ParsePorts(PortRange);
+            if (ports.Count == 0)
+            {
+                StatusMessage = "No valid ports to scan.";
+                return;
+            }
             var results = await _portScanner.ScanPortsAsync(
                 TargetIP, ports, TimeoutMs, MaxThreads, _cancellationTokenSource.Token,
                 new Progress<int>(p => Progress = p));
@@ -184,6 +189,14 @@ public class PortScannerViewModel : BaseViewModel
         if (string.IsNullOrWhiteSpace(portRange))
             return ports;
 
+        void AddPortIfValid(int port)
+        {
+            if (port is >= 1 and <= 65535)
+            {
+                ports.Add(port);
+            }
+        }
+
         // Handle comma-separated ports
         if (portRange.Contains(','))
         {
@@ -191,7 +204,7 @@ public class PortScannerViewModel : BaseViewModel
             {
                 if (int.TryParse(part.Trim(), out int port))
                 {
-                    ports.Add(port);
+                    AddPortIfValid(port);
                 }
             }
             return ports.Distinct().ToList();
@@ -205,6 +218,14 @@ public class PortScannerViewModel : BaseViewModel
                 int.TryParse(rangeParts[0].Trim(), out int start) &&
                 int.TryParse(rangeParts[1].Trim(), out int end))
             {
+                if (start > end)
+                {
+                    (start, end) = (end, start);
+                }
+
+                start = Math.Max(start, 1);
+                end = Math.Min(end, 65535);
+
                 for (int port = start; port <= end; port++)
                 {
                     ports.Add(port);
@@ -216,7 +237,7 @@ public class PortScannerViewModel : BaseViewModel
         // Single port
         if (int.TryParse(portRange.Trim(), out int singlePort))
         {
-            ports.Add(singlePort);
+            AddPortIfValid(singlePort);
         }
 
         return ports;
@@ -228,7 +249,7 @@ public class PortScannerViewModel : BaseViewModel
         StatusMessage = "Stopping port scan...";
     }
 
-    private async void ExecuteExportCsv()
+    private async Task ExecuteExportCsvAsync()
     {
         try
         {
@@ -252,7 +273,7 @@ public class PortScannerViewModel : BaseViewModel
         }
     }
 
-    private async void ExecuteCopyToClipboard()
+    private async Task ExecuteCopyToClipboardAsync()
     {
         var text = string.Join(Environment.NewLine, PortResults.Select(r =>
             $"{r.IPAddress}:{r.Port} - {r.Service} - {r.Status}"));
